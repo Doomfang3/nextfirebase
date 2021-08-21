@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import ImageUploader from "../../components/ImageUploader";
 
 export default function AdminPostEdit(props) {
   return (
@@ -56,12 +57,12 @@ function PostManager() {
 }
 
 function PostForm({ defaultValues, postRef, preview }) {
-  const { register, handleSubmit, reset, watch, formState, errors } = useForm({
+  const { register, handleSubmit, reset, watch, formState } = useForm({
     defaultValues,
     mode: "onChange",
   });
 
-  const { isValid, isDirty } = formState;
+  const { isValid, isDirty, errors } = formState;
 
   const updatePost = async ({ content, published }) => {
     await postRef.update({
@@ -74,7 +75,6 @@ function PostForm({ defaultValues, postRef, preview }) {
 
     toast.success("Post updated successfully!");
   };
-
   return (
     <form onSubmit={handleSubmit(updatePost)}>
       {preview && (
@@ -82,11 +82,10 @@ function PostForm({ defaultValues, postRef, preview }) {
           <ReactMarkdown>{watch("content")}</ReactMarkdown>
         </div>
       )}
-
-      <div>
+      <ImageUploader />
+      <div style={{ display: preview ? "none" : "block" }}>
         <textarea
-          name='content'
-          ref={register({
+          {...register("content", {
             maxLength: { value: 20000, message: "content is too long" },
             minLength: { value: 10, message: "content is too short" },
             required: { value: true, message: "content is required" },
@@ -94,7 +93,7 @@ function PostForm({ defaultValues, postRef, preview }) {
         ></textarea>
         {errors.content && <p className='text-danger'>{errors.content.message}</p>}
         <fieldset>
-          <input name='published' type='checkbox' ref={register} />
+          <input {...register("published")} type='checkbox' />
           <label>Published</label>
         </fieldset>
 
